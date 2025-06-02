@@ -23,15 +23,25 @@ class AsyncFixClient:
     def __init__(self, heartbeat_interval: int = 30):
         """Initialize the FIX client with heartbeat interval."""
         self.md = {}
-        self.ctrader_requests = {}
-        #     "1678": "EURUSD",
-        #     "1718": "XAUUSD",
-        #     "1719": "XAGUSD",
-        #     "1766": "XPDUSD",
-        #     "1767": "XPTUSD",
-        #     "1786": "SP500USD",
-        #     "1787": "NAS100USD",
-        # }
+        self.ctrader_requests = {
+            "1678": "EURUSD",
+            "1718": "XAUUSD",
+            "1719": "XAGUSD",
+            "1766": "XPDUSD",
+            "1767": "XPTUSD",
+            "1786": "SP500USD",
+            "1787": "NAS100USD",
+        }
+        for asset in self.ctrader_requests:
+            guid = td.trading_data.generate_guid(asset)
+            self.ctrader_requests[asset] = guid
+            for symbol, asset in self.ctrader_requests.items():
+                self.md[asset] = {
+                    "guid": guid,
+                    "bids": [],
+                    "asks": [],
+                    "timestamp": '',
+                }
 
         self.config_file = 'config.json'
         if not os.path.exists(self.config_file):
@@ -47,11 +57,6 @@ class AsyncFixClient:
         self.target_sub_id = 'QUOTE'
         self.host = 'live-uk-eqx-02.p.ctrader.com'
         self.port = 5201
-        # self.target_comp_id = self.config['TargetCompID']
-        # self.sender_sub_id = self.config.get('SenderSubID')
-        # self.target_sub_id = self.config.get('TargetSubID')
-        # self.host = self.config['Host']
-        # self.port = self.config['Port']
         self.heartbeat_interval = heartbeat_interval
 
         self.reader = None
@@ -97,8 +102,8 @@ class AsyncFixClient:
 
     async def send_heartbeat(self) -> None:
         """Send a heartbeat message."""
+        print(f"Debug forex market data: {td.trading_data.order_book}")
         msg = self._create_base_message("0")
-        print(f"Debug market data: {self.md}")
         await self.send_message(msg)
 
     async def send_logon(self) -> None:
@@ -150,8 +155,7 @@ class AsyncFixClient:
         buffer = bytearray()
 
         while self.stay_connected:
-            # try:
-            if True:
+            try:
                 # Read data
                 data = await self.reader.read(4096)
                 if not data:
@@ -190,13 +194,13 @@ class AsyncFixClient:
                 if not self.listening:
                     self.listening = True  # Set after first successful read
                 # print(self.md)
-            # except asyncio.CancelledError:
-            #     logger.info("Listen task cancelled")
-            #     self.stay_connected = False
-            #     break
-            # except Exception as e:
-            #     logger.error(f"Error in listen loop: {e}")
-            #     await asyncio.sleep(1)  # Prevent busy looping on error
+            except asyncio.CancelledError:
+                logger.info("Listen task cancelled")
+                self.stay_connected = False
+                break
+            except Exception as e:
+                logger.error(f"Error in listen loop: {e}")
+                await asyncio.sleep(1)  # Prevent busy looping on error
 
     async def process_message(self, msg: simplefix.FixMessage) -> None:
         """Process received FIX messages."""
@@ -248,30 +252,31 @@ class AsyncFixClient:
                 for key, value in self.ctrader_requests.items():
                     if symbol == key:
                         if entry_type == "0":  # Bid
-                            for entry in self.md[value]["data"]['bids']:
+                            for entry in self.md[value]['bids']:
                                 if entry['volume'] == size:
                                     entry['price'] = price
                                     break
                             else:
-                                self.md[value]["data"]['bids'].append({"price": price, "volume": size})
+                                self.md[value]['bids'].append({"price": price, "volume": size})
                         elif entry_type == "1":  # Offer
-                            for entry in self.md[value]["data"]['asks']:
+                            for entry in self.md[value]['asks']:
                                 if entry['volume'] == size:
                                     entry['price'] = price
                                     break
-                            self.md[value]["data"]['asks'].append({"price": price, "volume": size})
+                            self.md[value]['asks'].append({"price": price, "volume": size})
+                        td.trading_data.order_book[value] = td.OrderBook(
+                            instrument_uid=value,
+                            bids=self.md[value].get('bids', []),
+                            asks=self.md[value].get('asks', []),
+                            timestamp=int(time.time()),
+                        )
                         break
         except Exception as e:
             logger.error(f"Error processing snapshot: {e}")
 
     async def handle_market_data_incremental(self, msg: simplefix.FixMessage) -> None:
         """Process Market Data Incremental Refresh message."""
-        print(f'Debug Forex {msg}')
         try:
-            pass
-        except Exception as e:
-            print(f"Error processing incremental data: {e}")
-        if True:
             no_entries = msg.get(268)
             if not no_entries:
                 return
@@ -301,23 +306,29 @@ class AsyncFixClient:
                 for key, value in self.ctrader_requests.items():
                     if symbol == key:
                         if entry_type == "0":  # Bid
-                            for entry in self.md[value]["data"]['bids']:
+                            for entry in self.md[value]['bids']:
                                 if entry['volume'] == size:
                                     entry['price'] = price
                                     break
                             else:
-                                self.md[value]["data"]['bids'].append({"price": price, "volume": size})
+                                self.md[value]['bids'].append({"price": price, "volume": size})
                         elif entry_type == "1":  # Offer
-                            for entry in self.md[value]["data"]['asks']:
+                            for entry in self.md[value]['asks']:
                                 if entry['volume'] == size:
                                     entry['price'] = price
                                     break
                             else:
-                                self.md[value]["data"]['asks'].append({"price": price, "volume": size})
+                                self.md[value]['asks'].append({"price": price, "volume": size})
+                        td.trading_data.order_book[value] = td.OrderBook(
+                            instrument_uid=value,
+                            bids=self.md[value].get('bids', []),
+                            asks=self.md[value].get('asks', []),
+                            timestamp=int(time.time()),
+                        )
                         break
 
-        # except Exception as e:
-        #     logger.error(f"Error processing incremental data: {e}")
+        except Exception as e:
+            logger.error(f"Error processing incremental data: {e}")
 
     async def disconnect(self) -> None:
         """Disconnect from the FIX server."""
@@ -337,24 +348,6 @@ class AsyncFixClient:
     async def request_market_data(self) -> None:
         """Send Market Data Requests for all symbols."""
         now = time.time()
-        self.ctrader_requests = {
-            "1678": "EURUSD",
-            "1718": "XAUUSD",
-            "1719": "XAGUSD",
-            "1766": "XPDUSD",
-            "1767": "XPTUSD",
-            "1786": "SP500USD",
-            "1787": "NAS100USD",
-        }
-
-        for key in self.ctrader_requests:
-            guid = await td.trading_data.generate_guid(key)
-            td.trading_data.order_book[guid] = {
-                "guid": guid,
-                "bids": [],
-                "asks": []
-            }
-
         for request in self.ctrader_requests:
             now += 1
             md_req_id = str(now)

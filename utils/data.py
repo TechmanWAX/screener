@@ -21,7 +21,7 @@ class TradingData:
         self.guid = {}
         self.order_book = {}
 
-    async def generate_guid(self, asset) -> str:
+    def generate_guid(self, asset) -> str:
         while True:
             # Generate a new GUID
             guid = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + '-' + \

@@ -1,7 +1,6 @@
 import os
 import asyncio
-import traceback
-import sys
+import time
 import json
 
 from tasks.alor import Alor
@@ -51,7 +50,7 @@ async def shutdown():
     except asyncio.CancelledError:
         print("Some tasks were forcefully cancelled.")
 
-    print("CalculateWorker stopped.")
+    print("Screener stopped.")
 
 
 def main():
@@ -68,7 +67,7 @@ def main():
 
 async def task_manager():
     tasks = [
-        # asyncio.create_task(alor.connect(assets_moex)),
+        asyncio.create_task(alor.connect(assets_moex)),
         asyncio.create_task(forex.start())
     ]
     try:

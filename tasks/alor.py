@@ -44,25 +44,11 @@ class Alor:
         self.token_timestamp = time.time()
         self.alor_access = access_json['AccessToken']
 
-    async def generate_guid(self, asset) -> str:
-        while True:
-            # Generate a new GUID
-            guid = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + '-' + \
-                   ''.join(random.choices(string.ascii_lowercase + string.digits, k=4)) + '-' + \
-                   ''.join(random.choices(string.ascii_lowercase + string.digits, k=4)) + '-' + \
-                   ''.join(random.choices(string.ascii_lowercase + string.digits, k=4)) + '-' + \
-                   ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
-
-            # Check if the GUID is unique
-            if guid not in self.alor_guids:
-                self.alor_guids[asset] = guid
-                return guid
-
     async def add_query_asset(self, assets: list):
         for asset in assets:
             if self.token_timestamp + 60 * 20 >= time.time():
                 await self.get_access_token()
-            guid = await td.trading_data.generate_guid(asset)
+            guid = td.trading_data.generate_guid(asset)
             query = {
                 "opcode": "OrderBookGetAndSubscribe",
                 "code": asset,
