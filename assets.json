@@ -1,0 +1,47 @@
+{
+  "STOCKS": [
+    "TATN-TATNP",
+    "MTLR-MTLRP",
+    "SBER-SBERP"
+  ],
+  "FEATURES_FOREX": {
+    "NA1!/NAS100USD": {
+      "NA1!": 0.01,
+      "NAS100USD": 1
+    },
+    "SF1!/SP500USD": {
+      "SF1!": 1,
+      "SP500USD": 100
+    },
+    "ED1!/EURUSD": {
+      "ED1!": 1000,
+      "EURUSD": 100000
+    },
+    "SV1!/XAGUSD": {
+      "SV1!": 10,
+      "XAGUSD": 5000
+    },
+    "GD1!/XAUUSD": {
+      "GD1!": 1,
+      "XAUUSD": 100
+    },
+    "PT1!/XPTUSD": {
+      "PT1!": 1,
+      "XPTUSD": 100
+    },
+    "PD1!/XPDUSD": {
+      "PT1!": 1,
+      "XPTUSD": 100
+    }
+
+  },
+  "FEATURES_PROP": {
+    "ED1!/ED2!": 1000
+  },
+  "FEATURES_PROP_STOCKS": {
+    "SZ1!/SGZH": {
+      "SZ1!": 1000,
+      "SGZH": 1
+    }
+  }
+}

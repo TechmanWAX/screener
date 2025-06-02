@@ -1,0 +1,47 @@
+{
+  "stocks": [
+    {
+      "bundle": [
+        "SBER",
+        "SBERP"
+      ],
+      "range": {
+        "from": -1,
+        "to": 1
+      },
+      "direction": 3,
+      "lots": 100
+    },
+    {
+      "bundle": [
+        "TATN",
+        "TATNP"
+      ],
+      "range": {
+        "from": 0,
+        "to": 2
+      },
+      "direction": 1,
+      "lots": 100
+    },
+    {
+      "bundle": [
+        "MTLR",
+        "MTLRP"
+      ],
+      "range": {
+        "from": -1,
+        "to": -3
+      },
+      "direction": 1,
+      "lots": 100
+    }
+  ],
+  "features": [
+    "ED",
+    "SILV",
+    "GOLD",
+    "SI",
+    "CNY"
+  ]
+}
