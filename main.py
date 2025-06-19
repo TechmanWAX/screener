@@ -3,8 +3,10 @@ import asyncio
 import time
 import json
 
+import utils.data as td
 from tasks.alor import Alor
 from tasks.forex import AsyncFixClient as ForexClient
+
 
 
 assets_file = 'assets.json'
@@ -65,10 +67,17 @@ def main():
         loop.close()
 
 
+async def print_data():
+    while True:
+        print(f"Debug market data: {td.trading_data.order_book}")
+        await asyncio.sleep(100)
+
+
 async def task_manager():
     tasks = [
         asyncio.create_task(alor.connect(assets_moex)),
-        asyncio.create_task(forex.start())
+        asyncio.create_task(forex.start()),
+        asyncio.create_task(print_data())
     ]
     try:
         await asyncio.gather(*tasks)

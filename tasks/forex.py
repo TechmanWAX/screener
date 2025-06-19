@@ -102,7 +102,6 @@ class AsyncFixClient:
 
     async def send_heartbeat(self) -> None:
         """Send a heartbeat message."""
-        print(f"Debug forex market data: {td.trading_data.order_book}")
         msg = self._create_base_message("0")
         await self.send_message(msg)
 

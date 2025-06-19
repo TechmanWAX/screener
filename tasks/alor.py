@@ -110,4 +110,3 @@ class Alor:
                     asks=trading_data.get('asks', []),
                     timestamp=trading_data.get('timestamp', 0)
                 )
-                print(f"Debug Alor: {td.trading_data.order_book[guid]}")
